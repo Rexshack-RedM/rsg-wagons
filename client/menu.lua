@@ -135,11 +135,9 @@ function BuyWagonMenu(store, wagonType)
     lib.showMenu('buy_wagon_menu')
 end
 
--- ========= Deel 2: MyWagons + Selectie & Customization =========
-
 currentWagonCustom = currentWagonCustom or {}
 
--- 📜 Mijn wagons bekijken
+
 function MyWagons(store)
     lib.callback('rsg-wagons:checkMyWagons', false, function(wagons, custom)
         if not wagons or #wagons == 0 then
@@ -176,7 +174,7 @@ function MyWagons(store)
     end)
 end
 
--- 🔧 Selecteren en aanpassen van jouw wagon
+
 function SelectMyWagon(store, custom, wagonModel)
     ShowRotatePrompt()
     currentWagonCustom = custom or {}
@@ -261,7 +259,7 @@ function SelectMyWagon(store, custom, wagonModel)
     lib.showMenu('select_my_wagon_menu')
 end
 
--- 🎨 Livery aanpassen
+
 function EditLivery(store, custom, wagonModel, type)
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
@@ -272,7 +270,6 @@ function EditLivery(store, custom, wagonModel, type)
 
     local firstLivery
     for _, v in pairs((Custom[type] and Custom[type][wagonModel]) or {}) do
-        -- v = {liveryId, label}
         items[#items + 1] = {
             label = v[2],
             args = { value = v[1] },
@@ -308,7 +305,7 @@ function EditLivery(store, custom, wagonModel, type)
     lib.showMenu('livery_menu')
 end
 
--- ⚙️ Extra aanpassen
+
 function EditExtra(store, custom, wagonModel, type)
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
@@ -354,7 +351,7 @@ function EditExtra(store, custom, wagonModel, type)
     lib.showMenu('extra_menu')
 end
 
--- 🏮 Lantern aanpassen
+
 function EditLantern(store, custom, wagonModel, type)
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
@@ -400,7 +397,7 @@ function EditLantern(store, custom, wagonModel, type)
     lib.showMenu('lantern_menu')
 end
 
--- 🧰 Props aanpassen
+
 function EditWagonProps(store, custom, wagonModel, type)
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
@@ -452,7 +449,7 @@ function EditWagonProps(store, custom, wagonModel, type)
     lib.showMenu('wagon_props_menu')
 end
 
--- 🎛️ Tint aanpassen
+
 function EditWagonTint(store, custom, wagonModel, type)
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
