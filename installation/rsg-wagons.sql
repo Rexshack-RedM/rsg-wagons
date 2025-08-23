@@ -7,6 +7,5 @@ CREATE TABLE IF NOT EXISTS `rsg_wagons` (
   `animals` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`animals`)),
   `active` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=163 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
