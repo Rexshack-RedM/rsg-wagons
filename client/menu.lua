@@ -1,6 +1,3 @@
-lib.locale()
-
-
 RegisterNetEvent("rsg-wagons:client:openStore")
 AddEventHandler("rsg-wagons:client:openStore", function(store)
     local menuData = {
@@ -197,37 +194,38 @@ end
 ------------------- My Wagons
 
 function MyWagons(store)
-    local RSGCore = exports['rsg-core']:GetCoreObject()
-    RSGCore.Functions.TriggerCallback('rsg-wagons:checkMyWagons', function(wagons, custom)
-        local myWagonsData = {}
-        if wagons and #wagons > 0 then
-            myWagonsData = {}
-
-            for i, wagon in ipairs(wagons) do
-                local wagonCustom = custom[i] or {}
-
-                table.insert(myWagonsData, {
-                    title = wagonCustom.name or locale("cl_no_name"),
-                    onSelect = function()
-                        SpawnShowroomMyWagon(wagon, store, wagonCustom)
-                        SelectMyWagon(store, wagonCustom, wagon)
-                    end,
-                })
-            end
-
-            table.sort(myWagonsData, function(a, b)
-                return a.label:lower() < b.label:lower()
-            end)
-
-            lib.registerContext({
-                title = locale("cl_your_wagons"),
-                id = 'mywagons_menu',
-                options = myWagonsData
+    lib.callback('rsg-wagons:checkMyWagons', false, function(wagons, custom)
+        if not wagons or #wagons == 0 then
+            return lib.notify({
+                title = locale("error"),
+                description = locale("cl_no_have_wagon"),
+                type = "error",
+                duration = 7000
             })
-            lib.showContext('mywagons_menu')
-        else
-            lib.notify({ title = locale("error"), description = locale("cl_no_have_wagon"), type = "error", duration = 7000 })
         end
+
+        local myWagonsData = {}
+        for i, wagon in ipairs(wagons) do
+            local wagonCustom = custom[i] or {}
+            myWagonsData[#myWagonsData + 1] = {
+                title = wagonCustom.name or locale("cl_no_name"),
+                onSelect = function()
+                    SpawnShowroomMyWagon(wagon, store, wagonCustom)
+                    SelectMyWagon(store, wagonCustom, wagon)
+                end
+            }
+        end
+
+        table.sort(myWagonsData, function(a, b)
+            return a.title:lower() < b.title:lower()
+        end)
+
+        lib.registerContext({
+            id = 'mywagons_menu',
+            title = locale("cl_your_wagons"),
+            options = myWagonsData
+        })
+        lib.showContext('mywagons_menu')
     end)
 end
 
