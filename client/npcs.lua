@@ -1,42 +1,36 @@
 local spawnedPeds = {}
 
-
-CreateThread(function()
-    while true do
-        local sleep = 500
-        local playerCoords = GetEntityCoords(cache.ped)
-        for k, v in pairs(Config.Stores) do
-            local dist = #(playerCoords - v.npccoords.xyz)
-            if dist < 50.0 and not spawnedPeds[k] then
-                spawnedPeds[k] = { spawnedPed = spawnStorePed(v.npcmodel, v.npccoords, k) }
-            elseif dist >= 50.0 and spawnedPeds[k] then
-                fadeOutAndDeletePed(spawnedPeds[k].spawnedPed)
-                if Config.Target then
-                    exports.ox_target:removeEntity(spawnedPeds[k].spawnedPed, "npc_wagonStore")
-                end
-                spawnedPeds[k] = nil
-            end
+local function fadeOutAndDeletePed(ped)
+    if not DoesEntityExist(ped) then return end
+    CreateThread(function()
+        for i = 255, 0, -51 do
+            Wait(50)
+            SetEntityAlpha(ped, i, false)
         end
-        Wait(sleep)
-    end
-end)
+        SetEntityAsMissionEntity(ped, true, true)
+        DeletePed(ped)
+    end)
+end
 
-
-function spawnStorePed(npcModel, coords, storeId)
+local function spawnStorePed(npcModel, coords, storeId)
     if not lib.requestModel(npcModel, 5000) then return nil end
     local ped = CreatePed(npcModel, coords.x, coords.y, coords.z - 1.0, coords.w, false, false, 0, 0)
     SetEntityAlpha(ped, 0, false)
     SetRandomOutfitVariation(ped, true)
-    SetEntityCanBeDamaged(ped, false)
     SetEntityInvincible(ped, true)
     FreezeEntityPosition(ped, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
     SetPedCanBeTargetted(ped, false)
-    for i = 0, 255, 51 do
-        Wait(50)
-        SetEntityAlpha(ped, i, false)
-    end
-    if Config.Target and Config.FrameWork == "rsg" then
+
+    -- Fade in
+    CreateThread(function()
+        for i = 0, 255, 51 do
+            Wait(50)
+            SetEntityAlpha(ped, i, false)
+        end
+    end)
+
+    if Config.Target then
         exports.ox_target:addLocalEntity(ped, {
             {
                 name = "npc_wagonStore",
@@ -49,18 +43,31 @@ function spawnStorePed(npcModel, coords, storeId)
             }
         })
     end
+
     SetModelAsNoLongerNeeded(npcModel)
     return ped
 end
 
-function fadeOutAndDeletePed(ped)
-    if not DoesEntityExist(ped) then return end
-    for i = 255, 0, -51 do
-        Wait(50)
-        SetEntityAlpha(ped, i, false)
-    end
-    DeletePed(ped)
+
+for storeId, store in pairs(Config.Stores) do
+    local point = lib.points.new({
+        coords = store.npccoords.xyz,
+        distance = 50.0,
+        onEnter = function()
+            spawnedPeds[storeId] = { spawnedPed = spawnStorePed(store.npcmodel, store.npccoords, storeId) }
+        end,
+        onExit = function()
+            if spawnedPeds[storeId] then
+                fadeOutAndDeletePed(spawnedPeds[storeId].spawnedPed)
+                if Config.Target then
+                    exports.ox_target:removeEntity(spawnedPeds[storeId].spawnedPed, "npc_wagonStore")
+                end
+                spawnedPeds[storeId] = nil
+            end
+        end
+    })
 end
+
 
 AddEventHandler("onResourceStop", function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
@@ -71,6 +78,5 @@ AddEventHandler("onResourceStop", function(resourceName)
                 exports.ox_target:removeEntity(v.spawnedPed, "npc_wagonStore")
             end
         end
-        spawnedPeds[k] = nil
     end
 end)
