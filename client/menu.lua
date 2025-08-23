@@ -197,6 +197,7 @@ end
 ------------------- My Wagons
 
 function MyWagons(store)
+    local RSGCore = exports['rsg-core']:GetCoreObject()
     RSGCore.Functions.TriggerCallback('rsg-wagons:checkMyWagons', function(wagons, custom)
         local myWagonsData = {}
         if wagons and #wagons > 0 then

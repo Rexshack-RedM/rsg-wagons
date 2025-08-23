@@ -1,4 +1,4 @@
-RSGCore = exports['rsg-core']:GetCoreObject()
+local RSGCore = exports['rsg-core']:GetCoreObject()
 lib.locale()
 
 ------------------ Functions
