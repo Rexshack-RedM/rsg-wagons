@@ -3,7 +3,7 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 game 'rdr3'
 
 description 'rsg-wagons'
-version '1.0.0'
+version '2.0.0'
 
 shared_scripts {
     '@ox_lib/init.lua',
@@ -25,7 +25,7 @@ dependencies {
 }
 
 files {
-	'images/*.png',
+    'images/*.png',
 }
 
 lua54 'yes'
