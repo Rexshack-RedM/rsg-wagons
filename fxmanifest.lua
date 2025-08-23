@@ -7,7 +7,6 @@ version '2.0.0'
 ox_lib 'locale'
 shared_scripts {
     '@ox_lib/init.lua',
-    'locales/*.json',
     'config.lua',
 }
 
@@ -25,7 +24,7 @@ dependencies {
 }
 
 files {
+    'locales/*.json',
     'images/*.png',
 }
-
 lua54 'yes'
