@@ -179,24 +179,25 @@ local function GetClosestWagon(callback)
         end
     end)
 
-    if not closestWwagon or not networkId then
+    if not closestWagon or not networkId then
         return callback(nil, nil, nil, nil, nil, nil)
     end
 
     local cached = wagonVerificationCache[networkId]
     if cached then
-        return callback(closestWwagon, closestDist, cached.owner, cached.id, cached.model, networkId)
+        return callback(closestWagon, closestDist, cached.owner, cached.id, cached.model, networkId)
     end
 
-    RSGCore.Functions.TriggerCallback('rsg-wagons:isWagonRegistered', function(isRegistered, owner, id, model, netId)
+    lib.callback('rsg-wagons:isWagonRegistered', false, function(isRegistered, owner, id, model, netId)
         if isRegistered then
             wagonVerificationCache[netId] = { owner = owner, id = id, model = model }
-            callback(closestWwagon, closestDist, owner, id, model, netId)
+            callback(closestWagon, closestDist, owner, id, model, netId)
         else
-            callback(closestWwagon, closestDist, nil, nil, nil, networkId)
+            callback(closestWagon, closestDist, nil, nil, nil, networkId)
         end
     end, networkId)
 end
+
 
 local function ensureAnimalCapacityCached(netId, model)
     if animalStorageCache[netId] ~= nil then return end
@@ -605,10 +606,15 @@ end
 
 
 function StoreCarriedEntityInWagon()
-    RSGCore.Functions.TriggerCallback("rsg-wagons:getAnimalStorage", function(menuData)
+    lib.callback('rsg-wagons:getAnimalStorage', false, function(menuData)
         local carriedEntity = GetFirstEntityPedIsCarrying(cache.ped)
         if not carriedEntity or not DoesEntityExist(carriedEntity) then
-            return lib.notify({ title = locale("error"), description = locale("carry_nothing"), type = "error", duration = 7000 })
+            return lib.notify({
+                title = locale("error"),
+                description = locale("carry_nothing"),
+                type = "error",
+                duration = 7000
+            })
         end
 
         local totalStored = 0
@@ -618,25 +624,34 @@ function StoreCarriedEntityInWagon()
 
         local maxAnimal = animalStorageCache[wagonNetId] or 0
         if totalStored >= maxAnimal then
-            return lib.notify({ title = locale("error"), description = locale("wagon_full"), type = "error", duration = 7000 })
+            return lib.notify({
+                title = locale("error"),
+                description = locale("wagon_full"),
+                type = "error",
+                duration = 7000
+            })
         end
 
         local data = { model = GetEntityModel(carriedEntity) }
+
         if GetIsCarriablePelt(carriedEntity) then
             data.type = "pelt"
             data.peltquality = GetCarriableFromEntity(carriedEntity)
         else
-            local animalCheck = Config.AnimalsStorage[data.model] ~= nil
-            if animalCheck then
-                data.type = "animal"
-                data.metatag = GetCarcassMetaTag(carriedEntity)
-                data.outfit = GetPedMetaOutfitHash(carriedEntity)
-                data.skinned = IsEntityFullyLooted(carriedEntity) or false
-                data.damage = GetPedDamageCleanliness(carriedEntity) or 0
-                data.quality = GetPedQuality(carriedEntity) or 0
-            else
-                return lib.notify({ title = locale("error"), description = locale("carry_nothing"), type = "error", duration = 7000 })
+            if not Config.AnimalsStorage[data.model] then
+                return lib.notify({
+                    title = locale("error"),
+                    description = locale("carry_nothing"),
+                    type = "error",
+                    duration = 7000
+                })
             end
+            data.type = "animal"
+            data.metatag = GetCarcassMetaTag(carriedEntity)
+            data.outfit = GetPedMetaOutfitHash(carriedEntity)
+            data.skinned = IsEntityFullyLooted(carriedEntity) or false
+            data.damage = GetPedDamageCleanliness(carriedEntity) or 0
+            data.quality = GetPedQuality(carriedEntity) or 0
         end
 
         TriggerServerEvent("rsg-wagons:storeAnimalInWagon", wagonID, data)
@@ -644,16 +659,22 @@ function StoreCarriedEntityInWagon()
     end, wagonID)
 end
 
+
 function CarcassInWagon(wagonID)
     local carcassInWagon = {}
-    RSGCore.Functions.TriggerCallback("rsg-wagons:getAnimalStorage", function(menuData)
+    lib.callback('rsg-wagons:getAnimalStorage', false, function(menuData)
         if not menuData or #menuData == 0 then
             openMenu = false
-            return lib.notify({ title = locale("error"), description = locale("wagon_no_animals"), type = "error", duration = 7000 })
+            return lib.notify({
+                title = locale("error"),
+                description = locale("wagon_no_animals"),
+                type = "error",
+                duration = 7000
+            })
         end
 
         for _, v in pairs(menuData) do
-            carcassInWagon[#carcassInWagon+1] = {
+            carcassInWagon[#carcassInWagon + 1] = {
                 label = v.label,
                 value = v.infos.type,
                 infos = v.infos,
@@ -683,6 +704,7 @@ function CarcassInWagon(wagonID)
         )
     end, wagonID)
 end
+
 
 
 RegisterNetEvent("rsg-wagons:spawnAnimal", function(data)
