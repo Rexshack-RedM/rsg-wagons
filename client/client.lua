@@ -7,9 +7,24 @@ local StashPrompt, DeletePrompt, CarcassPrompt, StockCarcassPrompt
 local WagonGroup = GetRandomIntInRange(0, 0xffffff)
 
 
-local function HasItem(itemName, itemQnt)
-    return RSGCore.Functions.HasItem(itemName, itemQnt or 1) or false
+local function CallWagon()
+    if mywagon and DoesEntityExist(mywagon) then
+        return lib.notify({
+            title = locale("error"),
+            description = locale("cl_have_wagon"),
+            type = "error",
+            duration = 7000
+        })
+    end
+
+    if wagonBlip and DoesBlipExist(wagonBlip) then
+        RemoveBlip(wagonBlip)
+        wagonBlip = nil
+    end
+
+    TriggerServerEvent("rsg-wagons:getWagonDataByCitizenID")
 end
+
 
 RegisterNetEvent("rsg-wagons:client:dellwagon", function()
     DeleteWagon()
@@ -283,36 +298,40 @@ if not Config.Target then
     end)
 end
 
-local function createPrompt(varName, labelKey, control, group)
-    CreateThread(function()
-        local prompt = Citizen.InvokeNative(0x04F97DE45A519419)
-        PromptSetControlAction(prompt, GetHashKey(control))
-        PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", locale(labelKey)))
-        PromptSetEnabled(prompt, true)
-        PromptSetVisible(prompt, true)
-        PromptSetHoldMode(prompt, true)
-        PromptSetGroup(prompt, group)
-        PromptRegisterEnd(prompt)
-        _G[varName] = prompt
-    end)
+local stashPromptHandle
+local deletePromptHandle
+local carcassPromptHandle
+local stockCarcassPromptHandle
+
+-- Prompt aanmaken en handle teruggeven
+local function createPrompt(labelKey, control, group)
+    local prompt = Citizen.InvokeNative(0x04F97DE45A519419)
+    PromptSetControlAction(prompt, GetHashKey(control))
+    PromptSetText(prompt, CreateVarString(10, "LITERAL_STRING", locale(labelKey)))
+    PromptSetEnabled(prompt, true)
+    PromptSetVisible(prompt, true)
+    PromptSetHoldMode(prompt, true)
+    PromptSetGroup(prompt, group)
+    PromptRegisterEnd(prompt)
+    return prompt
 end
 
+-- Functies om de handles te vullen
 function StashPrompt()
-    createPrompt("StashPrompt", "cl_wagon_stash", Config.Keys.OpenWagonStash, WagonGroup)
+    stashPromptHandle = createPrompt("cl_wagon_stash", Config.Keys.OpenWagonStash, WagonGroup)
 end
 
 function DeletePrompt()
-    createPrompt("DeletePrompt", "cl_flee_wagon", "INPUT_FRONTEND_CANCEL", WagonGroup)
+    deletePromptHandle = createPrompt("cl_flee_wagon", "INPUT_FRONTEND_CANCEL", WagonGroup)
 end
 
 function CarcassPrompt()
-    createPrompt("CarcassPrompt", "cl_see_carcass", "INPUT_INTERACT_LOCKON_ANIMAL", WagonGroup)
+    carcassPromptHandle = createPrompt("cl_see_carcass", "INPUT_INTERACT_LOCKON_ANIMAL", WagonGroup)
 end
 
 function StockCarcassPrompt()
-    createPrompt("StockCarcassPrompt", "cl_stock_carcass", "INPUT_DOCUMENT_PAGE_PREV", WagonGroup)
+    stockCarcassPromptHandle = createPrompt("cl_stock_carcass", "INPUT_DOCUMENT_PAGE_PREV", WagonGroup)
 end
-
 
 if not Config.Target then
     CreateThread(function()
@@ -332,75 +351,75 @@ if not Config.Target then
                 PromptSetActiveGroupThisFrame(WagonGroup, groupLabel)
 
                 if isOwner then
-                    PromptSetEnabled(CarcassPrompt, false)
-                    PromptSetVisible(CarcassPrompt, false)
-                    PromptSetEnabled(StockCarcassPrompt, false)
-                    PromptSetVisible(StockCarcassPrompt, false)
+                    PromptSetEnabled(carcassPromptHandle, false)
+                    PromptSetVisible(carcassPromptHandle, false)
+                    PromptSetEnabled(stockCarcassPromptHandle, false)
+                    PromptSetVisible(stockCarcassPromptHandle, false)
 
-                    if PromptHasHoldModeCompleted(StashPrompt) then
-                        PromptSetEnabled(StashPrompt, false)
-                        PromptSetVisible(StashPrompt, false)
+                    if PromptHasHoldModeCompleted(stashPromptHandle) then
+                        PromptSetEnabled(stashPromptHandle, false)
+                        PromptSetVisible(stashPromptHandle, false)
                         TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID, wagonNetId)
                         Wait(500)
-                        PromptSetEnabled(StashPrompt, true)
-                        PromptSetVisible(StashPrompt, true)
-                    elseif PromptHasHoldModeCompleted(DeletePrompt) then
-                        PromptSetEnabled(DeletePrompt, false)
-                        PromptSetVisible(DeletePrompt, false)
+                        PromptSetEnabled(stashPromptHandle, true)
+                        PromptSetVisible(stashPromptHandle, true)
+                    elseif PromptHasHoldModeCompleted(deletePromptHandle) then
+                        PromptSetEnabled(deletePromptHandle, false)
+                        PromptSetVisible(deletePromptHandle, false)
                         DeleteWagon()
                         Wait(500)
-                        PromptSetEnabled(DeletePrompt, true)
-                        PromptSetVisible(DeletePrompt, true)
+                        PromptSetEnabled(deletePromptHandle, true)
+                        PromptSetVisible(deletePromptHandle, true)
                     elseif maxAnimal > 0 then
-                        PromptSetEnabled(CarcassPrompt, true)
-                        PromptSetVisible(CarcassPrompt, true)
-                        PromptSetEnabled(StockCarcassPrompt, true)
-                        PromptSetVisible(StockCarcassPrompt, true)
+                        PromptSetEnabled(carcassPromptHandle, true)
+                        PromptSetVisible(carcassPromptHandle, true)
+                        PromptSetEnabled(stockCarcassPromptHandle, true)
+                        PromptSetVisible(stockCarcassPromptHandle, true)
 
-                        if PromptHasHoldModeCompleted(CarcassPrompt) then
-                            PromptSetEnabled(CarcassPrompt, false)
-                            PromptSetVisible(CarcassPrompt, false)
+                        if PromptHasHoldModeCompleted(carcassPromptHandle) then
+                            PromptSetEnabled(carcassPromptHandle, false)
+                            PromptSetVisible(carcassPromptHandle, false)
                             CarcassInWagon(wagonID)
                             openMenu = true
                             Wait(1000)
-                            PromptSetEnabled(CarcassPrompt, true)
-                            PromptSetVisible(CarcassPrompt, true)
-                        elseif PromptHasHoldModeCompleted(StockCarcassPrompt) then
-                            PromptSetEnabled(StockCarcassPrompt, false)
-                            PromptSetVisible(StockCarcassPrompt, false)
+                            PromptSetEnabled(carcassPromptHandle, true)
+                            PromptSetVisible(carcassPromptHandle, true)
+                        elseif PromptHasHoldModeCompleted(stockCarcassPromptHandle) then
+                            PromptSetEnabled(stockCarcassPromptHandle, false)
+                            PromptSetVisible(stockCarcassPromptHandle, false)
                             StoreCarriedEntityInWagon()
                             Wait(1000)
-                            PromptSetEnabled(StockCarcassPrompt, true)
-                            PromptSetVisible(StockCarcassPrompt, true)
+                            PromptSetEnabled(stockCarcassPromptHandle, true)
+                            PromptSetVisible(stockCarcassPromptHandle, true)
                         end
                     end
                 else
-                    PromptSetEnabled(DeletePrompt, false)
-                    PromptSetVisible(DeletePrompt, false)
+                    PromptSetEnabled(deletePromptHandle, false)
+                    PromptSetVisible(deletePromptHandle, false)
 
-                    if PromptHasHoldModeCompleted(StashPrompt) then
-                        PromptSetEnabled(StashPrompt, false)
-                        PromptSetVisible(StashPrompt, false)
+                    if PromptHasHoldModeCompleted(stashPromptHandle) then
+                        PromptSetEnabled(stashPromptHandle, false)
+                        PromptSetVisible(stashPromptHandle, false)
                         TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID, wagonNetId)
                         Wait(500)
-                        PromptSetEnabled(StashPrompt, true)
-                        PromptSetVisible(StashPrompt, true)
+                        PromptSetEnabled(stashPromptHandle, true)
+                        PromptSetVisible(stashPromptHandle, true)
                     end
 
                     if maxAnimal > 0 then
-                        PromptSetEnabled(StockCarcassPrompt, true)
-                        PromptSetVisible(StockCarcassPrompt, true)
-                        if PromptHasHoldModeCompleted(StockCarcassPrompt) then
-                            PromptSetEnabled(StockCarcassPrompt, false)
-                            PromptSetVisible(StockCarcassPrompt, false)
+                        PromptSetEnabled(stockCarcassPromptHandle, true)
+                        PromptSetVisible(stockCarcassPromptHandle, true)
+                        if PromptHasHoldModeCompleted(stockCarcassPromptHandle) then
+                            PromptSetEnabled(stockCarcassPromptHandle, false)
+                            PromptSetVisible(stockCarcassPromptHandle, false)
                             StoreCarriedEntityInWagon()
                             Wait(1000)
-                            PromptSetEnabled(StockCarcassPrompt, true)
-                            PromptSetVisible(StockCarcassPrompt, true)
+                            PromptSetEnabled(stockCarcassPromptHandle, true)
+                            PromptSetVisible(stockCarcassPromptHandle, true)
                         end
                     else
-                        PromptSetEnabled(StockCarcassPrompt, false)
-                        PromptSetVisible(StockCarcassPrompt, false)
+                        PromptSetEnabled(stockCarcassPromptHandle, false)
+                        PromptSetVisible(stockCarcassPromptHandle, false)
                     end
                 end
             end
@@ -408,6 +427,7 @@ if not Config.Target then
         end
     end)
 end
+
 
 
 RegisterNetEvent("btc-wagon:askOwnerPermission", function(data)
@@ -509,24 +529,12 @@ if Config.SpawnKey then
     end)
 end
 
-
-function CallWagon()
-    if mywagon and DoesEntityExist(mywagon) then
-        return lib.notify({
-            title = locale("error"),
-            description = locale("cl_have_wagon"),
-            type = "error",
-            duration = 7000
-        })
-    end
-
-    if wagonBlip and DoesBlipExist(wagonBlip) then
-        RemoveBlip(wagonBlip)
-        wagonBlip = nil
-    end
-
-    TriggerServerEvent("rsg-wagons:getWagonDataByCitizenID")
+if Config.usecommand  then
+RegisterCommand("callwagon", function()
+    CallWagon()
+end, false)
 end
+
 
 local function GetFirstEntityPedIsCarrying(ped)
     return Citizen.InvokeNative(0xD806CD2A4F2C2996, ped)
