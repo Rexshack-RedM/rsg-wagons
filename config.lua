@@ -2,7 +2,7 @@ Config = {}
 
 Config.Target = false    -- To use eye Target -- ox_target required
 Config.PositionMenu = 'top-right'
-
+Config.usecommand = true
 
 ------
 Config.SpawnKey = "INPUT_OPEN_JOURNAL" -- Key to call the wagon, use false to disable

@@ -1,73 +1,82 @@
 local spawnedPeds = {}
 
-lib.locale()
-
-Citizen.CreateThread(function()
-    while true do
-        Wait(500)
-        for k, v in pairs(Config.Stores) do
-            local playerCoords = GetEntityCoords(PlayerPedId())
-            local distance = #(playerCoords - v.npccoords.xyz)
-
-            if distance < 50 and not spawnedPeds[k] then
-                local spawnedPed = NearPed(v.npcmodel, v.npccoords, k)
-                spawnedPeds[k] = { spawnedPed = spawnedPed }
-            end
-
-            if distance >= 50 and spawnedPeds[k] then
-                for i = 255, 0, -51 do
-                    Wait(50)
-                    SetEntityAlpha(spawnedPeds[k].spawnedPed, i, false)
-                end
-                DeletePed(spawnedPeds[k].spawnedPed)
-                if Config.Target then
-                    exports.ox_target:removeEntity(spawnedPeds[k].spawnedPed, "npc_wagonStore")
-                end
-                spawnedPeds[k] = nil
-            end
+local function fadeOutAndDeletePed(ped)
+    if not DoesEntityExist(ped) then return end
+    CreateThread(function()
+        for i = 255, 0, -51 do
+            Wait(50)
+            SetEntityAlpha(ped, i, false)
         end
-    end
-end)
+        SetEntityAsMissionEntity(ped, true, true)
+        DeletePed(ped)
+    end)
+end
 
-function NearPed(npcmodel, npccoords, stableid)
-    RequestModel(npcmodel)
-    while not HasModelLoaded(npcmodel) do
-        Wait(50)
-    end
-    local spawnedPed = CreatePed(npcmodel, npccoords.x, npccoords.y, npccoords.z - 1.0, npccoords.w, false, false, 0, 0)
-    SetEntityAlpha(spawnedPed, 0, false)
-    SetRandomOutfitVariation(spawnedPed, true)
-    SetEntityCanBeDamaged(spawnedPed, false)
-    SetEntityInvincible(spawnedPed, true)
-    FreezeEntityPosition(spawnedPed, true)
-    SetBlockingOfNonTemporaryEvents(spawnedPed, true)
-    SetPedCanBeTargetted(spawnedPed, false)
-    for i = 0, 255, 51 do
-        Wait(50)
-        SetEntityAlpha(spawnedPed, i, false)
-    end
-    if Config.Target and Config.FrameWork == "rsg" then
-        exports.ox_target:addLocalEntity(spawnedPed, {
+local function spawnStorePed(npcModel, coords, storeId)
+    if not lib.requestModel(npcModel, 5000) then return nil end
+    local ped = CreatePed(npcModel, coords.x, coords.y, coords.z - 1.0, coords.w, false, false, 0, 0)
+    SetEntityAlpha(ped, 0, false)
+    SetRandomOutfitVariation(ped, true)
+    SetEntityInvincible(ped, true)
+    FreezeEntityPosition(ped, true)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+    SetPedCanBeTargetted(ped, false)
+
+    -- Fade in
+    CreateThread(function()
+        for i = 0, 255, 51 do
+            Wait(50)
+            SetEntityAlpha(ped, i, false)
+        end
+    end)
+
+    if Config.Target then
+        exports.ox_target:addLocalEntity(ped, {
             {
                 name = "npc_wagonStore",
                 icon = "far fa-eye",
                 label = locale("cl_wagon_store"),
                 onSelect = function()
-                    TriggerEvent("rsg-wagons:client:openStore", stableid)
+                    TriggerEvent("rsg-wagons:client:openStore", storeId)
                 end,
                 distance = 2.0
             }
         })
     end
-    return spawnedPed
+
+    SetModelAsNoLongerNeeded(npcModel)
+    return ped
 end
 
--- cleanup
+
+for storeId, store in pairs(Config.Stores) do
+    local point = lib.points.new({
+        coords = store.npccoords.xyz,
+        distance = 50.0,
+        onEnter = function()
+            spawnedPeds[storeId] = { spawnedPed = spawnStorePed(store.npcmodel, store.npccoords, storeId) }
+        end,
+        onExit = function()
+            if spawnedPeds[storeId] then
+                fadeOutAndDeletePed(spawnedPeds[storeId].spawnedPed)
+                if Config.Target then
+                    exports.ox_target:removeEntity(spawnedPeds[storeId].spawnedPed, "npc_wagonStore")
+                end
+                spawnedPeds[storeId] = nil
+            end
+        end
+    })
+end
+
+
 AddEventHandler("onResourceStop", function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
     for k, v in pairs(spawnedPeds) do
-        DeletePed(spawnedPeds[k].spawnedPed)
-        exports.ox_target:removeEntity(spawnedPeds[k].spawnedPed, "npc_wagonStore")
-        spawnedPeds[k] = nil
+        if DoesEntityExist(v.spawnedPed) then
+            DeletePed(v.spawnedPed)
+            if Config.Target then
+                exports.ox_target:removeEntity(v.spawnedPed, "npc_wagonStore")
+            end
+        end
     end
 end)
