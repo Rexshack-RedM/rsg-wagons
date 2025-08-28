@@ -44,7 +44,6 @@ function BuyWagonMenu(store, wagonType)
                 sorted[#sorted + 1] = {
                     name = v.name,
                     price = v.price,
-                    priceGold = v.priceGold,
                     maxAnimals = v.maxAnimals,
                     slots = v.slots,
                     maxWeight = v.maxWeight,
@@ -57,12 +56,8 @@ function BuyWagonMenu(store, wagonType)
     table.sort(sorted, function(a, b) return (a.price or math.huge) < (b.price or math.huge) end)
 
     for _, v in ipairs(sorted) do
-        local priceText, useCash, useGold = "", false, false
+        local priceText, useCash = "", false
         if v.price then priceText = "💰" .. v.price .. " "; useCash = true end
-        if v.priceGold then
-            priceText = priceText .. (priceText ~= "" and " or " or "") .. "🪙" .. v.priceGold .. " "
-            useGold = true
-        end
         if v.maxAnimals then priceText = priceText .. "| 🦌 " .. locale("animals") .. " " .. v.maxAnimals .. " " end
         if v.slots and not v.maxWeight then priceText = priceText .. "| " .. locale("slots") .. ": " .. v.slots .. " " end
         if not v.slots and v.maxWeight then priceText = priceText .. "| " .. locale("weight") .. ": " .. v.maxWeight .. " kg" end
@@ -72,7 +67,7 @@ function BuyWagonMenu(store, wagonType)
 
         wagonsData[#wagonsData + 1] = {
             label = v.name,
-            args = { wagonModel = v.model, useCash = useCash, useGold = useGold },
+            args = { wagonModel = v.model, useCash = useCash },
             description = locale("buy_a_wagon") .. priceText,
             close = true
         }
@@ -100,24 +95,7 @@ function BuyWagonMenu(store, wagonType)
         end,
         options = wagonsData
     }, function(_, _, args)
-        local moneyType
-        if args.useCash and args.useGold then
-            local input = lib.inputDialog(locale("payment"), {
-                { type = "select", label = locale("choose"), options = {
-                    { value = "cash", label = locale("cashtype") },
-                    { value = "gold", label = locale("goldtype") }
-                } }
-            })
-            if input and input[1] then
-                moneyType = input[1]
-            else
-                CloseShowroom()
-                HideRotatePrompt()
-                return
-            end
-        else
-            moneyType = args.useCash and "cash" or "gold"
-        end
+        local moneyType = Config.MoneyType.money
 
         local nameInput = lib.inputDialog(locale("cl_wagon_name"), {
             { type = "input", label = locale("cl_wagon_name_label"), description = locale("cl_wagon_name_desc"), required = true, min = 1, max = 16 }
