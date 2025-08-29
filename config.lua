@@ -14,7 +14,6 @@ Config.SpawnRadius = 100
 
 Config.MoneyType = {
     money = "cash",
-    gold = "bloodmoney",
 }
 
 Config.maxWagonsPerPlayer = 5
@@ -80,7 +79,6 @@ Config.Wagons = {
             maxWeight = 560,                       -- Maximum weight (ex: ~1250 lbs / 560 kg)
             slots = 50,                            -- Number of available slots
             price = 40,                            -- Price in dollars of the era
-            priceGold = 2,                         -- Price in gold (premium)
             maxAnimals = 5,                        -- Small animals/pelts
         },
         wagon03x = {
@@ -88,7 +86,6 @@ Config.Wagons = {
             maxWeight = 600,                           -- (ex: ~1500 lbs / 680 kg)
             slots = 60,
             price = 50,
-            priceGold = 2,
             maxAnimals = 6, -- Small animals/pelts
         },
         wagon04x = {
@@ -96,7 +93,6 @@ Config.Wagons = {
             maxWeight = 500,                  -- (ex: ~1100 lbs / 500 kg)
             slots = 45,
             price = 35,
-            priceGold = 2,
             maxAnimals = 4, -- Small animals/pelts
         },
         wagon05x = {
@@ -104,7 +100,6 @@ Config.Wagons = {
             maxWeight = 635,                   -- (ex: ~1400 lbs / 635 kg)
             slots = 55,
             price = 45,
-            priceGold = 2,
             maxAnimals = 5, -- Small animals/pelts
         },
         wagon06x = {
@@ -112,7 +107,6 @@ Config.Wagons = {
             maxWeight = 725,                         -- (ex: ~1600 lbs / 725 kg)
             slots = 65,
             price = 55,
-            priceGold = 3,
             maxAnimals = 2, -- Birds in cages or small items
         },
         cart01 = {
@@ -120,7 +114,6 @@ Config.Wagons = {
             maxWeight = 400,                   -- (ex: ~900 lbs / 400 kg)
             slots = 35,
             price = 25,
-            priceGold = 1, -- Adjusted from 18
             maxAnimals = false,
         },
         cart02 = {
@@ -128,7 +121,6 @@ Config.Wagons = {
             maxWeight = 450,                           -- (ex: ~1000 lbs / 450 kg)
             slots = 40,
             price = 30,
-            priceGold = 1, -- Adjusted from 18
             maxAnimals = false,
         },
         cart03 = {
@@ -136,7 +128,6 @@ Config.Wagons = {
             maxWeight = 360,                     -- (ex: ~800 lbs / 360 kg)
             slots = 30,
             price = 22,
-            priceGold = 1, -- Adjusted from 18
             maxAnimals = false,
         },
         cart04 = {
@@ -144,7 +135,6 @@ Config.Wagons = {
             maxWeight = 430,                     -- (ex: ~950 lbs / 430 kg)
             slots = 38,
             price = 28,
-            priceGold = 6, -- Adjusted from 18
             maxAnimals = false,
         },
         cart05 = {
@@ -152,7 +142,6 @@ Config.Wagons = {
             maxWeight = 900,                         -- (ex: ~2000 lbs / 900 kg - liquids are heavy)
             slots = 10,                              -- Represents large containers/tank
             price = 70,                              -- Specialized
-            priceGold = 3,                           -- Adjusted from 18
             maxAnimals = false,
         },
         cart06 = {
@@ -160,7 +149,6 @@ Config.Wagons = {
             maxWeight = 790,                 -- (ex: ~1750 lbs / 790 kg)
             slots = 70,
             price = 60,
-            priceGold = 3, -- Adjusted from 18
             maxAnimals = false,
         },
         cart07 = {
@@ -168,7 +156,6 @@ Config.Wagons = {
             maxWeight = 475,                -- (ex: ~1050 lbs / 475 kg)
             slots = 42,
             price = 32,
-            priceGold = 2, -- Adjusted from 18
             maxAnimals = false,
         },
         cart08 = {
@@ -184,7 +171,6 @@ Config.Wagons = {
             maxWeight = 860,                          -- (ex: ~1900 lbs / 860 kg) Chuckwagons carried a lot
             slots = 75,                               -- For food, utensils, etc.
             price = 80,                               -- Chuckwagons were substantial
-            priceGold = 3,                            -- Adjusted from 18
             maxAnimals = false,                       -- Primarily for supplies
         },
         chuckwagon002x = {
@@ -192,7 +178,6 @@ Config.Wagons = {
             maxWeight = 815,                          -- (ex: ~1800 lbs / 815 kg)
             slots = 70,
             price = 65,
-            priceGold = 3, -- Adjusted from 18
             maxAnimals = false,
         },
         coal_wagon = {
@@ -200,7 +185,6 @@ Config.Wagons = {
             maxWeight = 1360,                -- (ex: ~3000 lbs / 1360 kg) For heavy and bulk cargo
             slots = 30,                      -- Fewer slots, for bulk items
             price = 100,
-            priceGold = 4,                   -- Adjusted from 18
             maxAnimals = false,
         },
         gatchuck = {                             -- Hash may suggest something military (Gatling) or just heavy cargo
@@ -208,7 +192,6 @@ Config.Wagons = {
             maxWeight = 1580,                        -- (ex: ~3500 lbs / 1580 kg) A large freight wagon
             slots = 80,
             price = 120,
-            priceGold = 5, -- Adjusted from 18
             maxAnimals = false,
         },
         huntercart01 = {
@@ -216,7 +199,6 @@ Config.Wagons = {
             maxWeight = 250, -- For carcasses and pelts
             slots = 50,      -- Space for pelts and various game
             price = 75,      -- Specialized equipment
-            priceGold = 3,   -- Adjusted from 18. Original was 30 animals.
             maxAnimals = 20, -- Units of medium game (deer) or many small ones
         },
         oilwagon01x = {
@@ -224,7 +206,6 @@ Config.Wagons = {
             maxWeight = 860,                        -- (ex: ~1900 lbs / 860 kg)
             slots = 8,                              -- Fewer slots for barrels/tank
             price = 85,
-            priceGold = 3,                          -- Adjusted from 18
             maxAnimals = false,
         },
         oilwagon02x = {
@@ -232,7 +213,6 @@ Config.Wagons = {
             maxWeight = 1250,                       -- (ex: ~2750 lbs / 1250 kg)
             slots = 12,                             -- More barrels/larger tank
             price = 110,
-            priceGold = 4,                          -- Adjusted from 18
             maxAnimals = false,
         },
         supplywagon = {
@@ -240,7 +220,6 @@ Config.Wagons = {
             maxWeight = 1700,                     -- (ex: ~3750 lbs / 1700 kg) A true freight wagon
             slots = 100,
             price = 130,
-            priceGold = 5,    -- Adjusted from 18
             maxAnimals = false, -- For general goods
         },
         utilliwag = {
@@ -248,7 +227,6 @@ Config.Wagons = {
             maxWeight = 450,                              -- (ex: ~1000 lbs / 450 kg) Buckboards were lighter
             slots = 40,
             price = 30,
-            priceGold = 1,  -- Adjusted from 18
             maxAnimals = 2, -- Could carry hunting dogs or some small game
         },
     },
@@ -259,7 +237,6 @@ Config.Wagons = {
             maxWeight = 450, -- Payload capacity in KG (ammo, water, crew supplies)
             slots = 10,      -- Spaces for ammo, essential supplies
             price = 350,     -- A specialized military vehicle would be expensive
-            priceGold = 14,  -- 350 / 25 = 14
             maxAnimals = false,
         },
         policewagon01x = {   -- Wagon model hash
@@ -267,7 +244,6 @@ Config.Wagons = {
             maxWeight = 700, -- Capacity in KG (for 8-10 people + police equipment)
             slots = 15,      -- Seats and space for equipment
             price = 180,     -- Reinforced and special-purpose wagon
-            priceGold = 7,   -- 180 / 25 = 7 (result of 7.2 truncated to int)
             maxAnimals = false,
         },
         policewagongatling01x = { -- Wagon model hash
@@ -275,7 +251,6 @@ Config.Wagons = {
             maxWeight = 550,       -- Payload capacity in KG (extra ammo, tactical gear)
             slots = 12,            -- Spaces for ammo and tactical gear
             price = 400,           -- More expensive due to heavy armament
-            priceGold = 16,        -- 400 / 25 = 16
             maxAnimals = false,
         },
         stagecoach004_2x = { -- Wagon model hash
@@ -283,7 +258,6 @@ Config.Wagons = {
             maxWeight = 800, -- Capacity in KG (passengers, luggage, valuables; already considering armor weight)
             slots = 25,      -- Internal seats, luggage rack, safe
             price = 600,     -- Stagecoaches were expensive, armored ones even more so
-            priceGold = 24,  -- 600 / 25 = 24
             maxAnimals = false,
         },
         stagecoach004x = {   -- Wagon model hash
@@ -291,7 +265,6 @@ Config.Wagons = {
             maxWeight = 900, -- Capacity in KG (passengers and cargo; less armor can mean higher payload)
             slots = 22,      -- Seats and cargo space
             price = 500,     -- Still very expensive
-            priceGold = 20,  -- 500 / 25 = 20
             maxAnimals = false,
         },
         wagonarmoured01x = { -- Wagon model hash
@@ -299,7 +272,6 @@ Config.Wagons = {
             maxWeight = 500, -- Cargo capacity in KG for valuables (e.g., gold, documents); the structure is already very heavy due to the armor.
             slots = 10,      -- Secure and limited internal space
             price = 700,     -- Extremely expensive due to armor and security
-            priceGold = 28,  -- 700 / 25 = 28
             maxAnimals = false,
         },
         wagoncircus01x = {   -- Wagon model hash
@@ -307,7 +279,6 @@ Config.Wagons = {
             maxWeight = 800, -- Capacity in KG for circus equipment, bulky props
             slots = 40,      -- Space for items of various shapes
             price = 120,     -- Large and decorated wagons
-            priceGold = 4,   -- 120 / 25 = 4 (result of 4.8 truncated to int)
             maxAnimals = false,
         },
         wagoncircus02x = {   -- Wagon model hash
@@ -315,7 +286,7 @@ Config.Wagons = {
             maxWeight = 600, -- Capacity in KG for circus personnel and their belongings/costumes
             slots = 30,      -- Space for people and their items
             price = 100,
-            priceGold = 4,   -- 100 / 25 = 4
+
             maxAnimals = false,
         },
         wagondairy01x = {    -- Wagon model hash
@@ -323,7 +294,6 @@ Config.Wagons = {
             maxWeight = 400, -- Capacity in KG (e.g., 400 liters of milk in cans, approx. 400kg + can weight)
             slots = 50,      -- Space for many small containers
             price = 70,      -- Cost of a specialized delivery wagon
-            priceGold = 2,   -- 70 / 25 = 2 (result of 2.8 truncated to int)
             maxAnimals = false,
         },
         wagondoc01x = {      -- Wagon model hash
@@ -331,7 +301,6 @@ Config.Wagons = {
             maxWeight = 300, -- Capacity in KG (medicines, elixirs, demonstration equipment)
             slots = 45,      -- Many small bottles and boxes
             price = 90,      -- Specialized wagon
-            priceGold = 3,   -- 90 / 25 = 3 (result of 3.6 truncated to int)
             maxAnimals = false,
         },
         wagonprison01x = {   -- Wagon model hash
@@ -339,7 +308,6 @@ Config.Wagons = {
             maxWeight = 750, -- Capacity in KG (for 8-10 prisoners + guards)
             slots = 10,      -- Focus on security, cells, not miscellaneous cargo
             price = 200,     -- Reinforced wagon with cells
-            priceGold = 8,   -- 200 / 25 = 8
             maxAnimals = false,
         },
         wagontraveller01x = { -- Wagon model hash
@@ -347,7 +315,6 @@ Config.Wagons = {
             maxWeight = 500,  -- Capacity in KG (personal luggage, goods for itinerant trade)
             slots = 60,       -- Good internal and possibly external space
             price = 110,
-            priceGold = 4,    -- 110 / 25 = 4 (result of 4.4 truncated to int)
             maxAnimals = false,
         },
         wagonwork01x = {     -- Wagon model hash
@@ -355,7 +322,6 @@ Config.Wagons = {
             maxWeight = 450, -- Capacity in KG (bread, flour sacks, other delivery goods)
             slots = 55,      -- Adaptable for different types of goods
             price = 75,
-            priceGold = 3,   -- 75 / 25 = 3
             maxAnimals = false,
         },
         warwagon2 = {        -- Wagon model hash
@@ -373,7 +339,6 @@ Config.Wagons = {
             maxWeight = 350,                            -- Capacity in KG (2-3 passengers + light luggage ~75kg/person + 50-125kg luggage)
             slots = 8,                                  -- Seats and small space for luggage (ex: 2-3 people + luggage)
             price = 250,                                -- Price of an elegant private carriage, but not the most opulent
-            priceGold = 10,                             -- 250 / 25 = 10
             maxAnimals = false,
         },
         coach3 = {
@@ -381,7 +346,6 @@ Config.Wagons = {
             maxWeight = 400,                        -- Capacity in KG (typically 4 passengers + light luggage)
             slots = 10,                             -- Seats for 4 and space for hand luggage
             price = 220,                            -- Cost for a robust service vehicle
-            priceGold = 8,                          -- 220 / 25 = 8 (8.8 truncated)
             maxAnimals = false,
         },
         coach4 = {
@@ -389,7 +353,6 @@ Config.Wagons = {
             maxWeight = 450,            -- Capacity in KG (4 passengers comfortably + day luggage)
             slots = 12,                 -- Spacious seats and area for picnic baskets, etc.
             price = 350,                -- Prestige vehicle
-            priceGold = 14,             -- 350 / 25 = 14
             maxAnimals = false,
         },
         coach5 = {
@@ -397,7 +360,6 @@ Config.Wagons = {
             maxWeight = 300,           -- Capacity in KG (2 passengers + driver + small personal luggage)
             slots = 6,                 -- Seats for 2 + space for the driver and minimal items
             price = 300,               -- Status carriage, focused on elegance
-            priceGold = 12,            -- 300 / 25 = 12
             maxAnimals = false,
         },
         stagecoach001x = {
@@ -405,7 +367,6 @@ Config.Wagons = {
             maxWeight = 700,                     -- Capacity in KG (6-9 passengers + considerable luggage/mail)
             slots = 20,                          -- Internal, external roof seats, rear and front luggage rack
             price = 450,                         -- Cost of a robust and functional line stagecoach
-            priceGold = 18,                      -- 450 / 25 = 18
             maxAnimals = false,
         },
         stagecoach002x = {
@@ -413,7 +374,6 @@ Config.Wagons = {
             maxWeight = 500,                -- Capacity in KG (4-6 passengers + luggage/mail)
             slots = 15,                     -- Similar configuration to the larger one, but on a smaller scale
             price = 380,                    -- Cheaper, but still an essential service vehicle
-            priceGold = 15,                 -- 380 / 25 = 15 (15.2 truncated)
             maxAnimals = false,
         },
         stagecoach005x = {
@@ -421,7 +381,6 @@ Config.Wagons = {
             maxWeight = 750,                                -- Capacity in KG (more passengers, cargo, and supplies for the journey)
             slots = 22,                                     -- Optimized to maximize transport over long distances
             price = 500,                                    -- A considerable investment for line operators
-            priceGold = 20,                                 -- 500 / 25 = 20
             maxAnimals = false,
         },
         stagecoach006x = {
@@ -429,7 +388,6 @@ Config.Wagons = {
             maxWeight = 1000,                   -- Capacity in KG (designed for many passengers, little individual luggage)
             slots = 25,                         -- Focus on number of seats, like a "trolley on wheels"
             price = 400,                        -- Public transport vehicle, functional construction
-            priceGold = 16,                     -- 400 / 25 = 16
             maxAnimals = false,
         },
         stagecoach003x = {
@@ -437,7 +395,6 @@ Config.Wagons = {
             maxWeight = 400,                                        -- Capacity in KG (4 passengers + light luggage)
             slots = 10,                                             -- Similar to the Fiacre, perhaps less ornate
             price = 200,                                            -- An entry-level model for closed carriages
-            priceGold = 8,                                          -- 200 / 25 = 8
             maxAnimals = false,
         },
         coach6 = {
@@ -445,7 +402,6 @@ Config.Wagons = {
             maxWeight = 600,                                       -- Capacity in KG (several passengers seated in rows)
             slots = 18,                                            -- Multiple seats, usually open
             price = 320,                                           -- For group transport for leisure or events
-            priceGold = 12,                                        -- 320 / 25 = 12 (12.8 truncated)
             maxAnimals = false,
         },
         buggy01 = {
@@ -453,7 +409,6 @@ Config.Wagons = {
             maxWeight = 250,                          -- Capacity in KG (2 passengers + small hand luggage or shopping)
             slots = 5,                                -- Seats for 2 and minimal space for belongings
             price = 150,                              -- High-quality buggy, with superior finishes
-            priceGold = 6,                            -- 150 / 25 = 6
             maxAnimals = false,
         },
         buggy02 = {
@@ -461,7 +416,6 @@ Config.Wagons = {
             maxWeight = 200,                  -- Capacity in KG (2 passengers, not much luggage)
             slots = 4,                        -- Essentially the seats
             price = 80,                       -- One of the most accessible and popular animal-drawn vehicles
-            priceGold = 3,                    -- 80 / 25 = 3 (3.2 truncated)
             maxAnimals = false,
         },
         buggy03 = {
@@ -469,7 +423,6 @@ Config.Wagons = {
             maxWeight = 350,                       -- Capacity in KG (4 passengers, little luggage)
             slots = 8,                             -- Seats for four, usually 2 benches
             price = 120,                           -- Popular option for families or small groups
-            priceGold = 4,                         -- 120 / 25 = 4 (4.8 truncated)
             maxAnimals = false,
         },
     }
