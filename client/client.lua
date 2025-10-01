@@ -135,10 +135,10 @@ end
 
 function CreateWagonTarget(netId)
     exports.ox_target:addEntity(netId, {
-        { name = "npc_wagonStash", icon = "fa-solid fa-box-open", label = locale("cl_wagon_stash"), onSelect = StashWagon, distance = 1.5 },
-        { name = "npc_wagonShowCarcass", icon = "fa-solid fa-boxes-stacked", label = locale("cl_see_carcass"), onSelect = ShowCarcass, distance = 1.5 },
-        { name = "npc_wagonStockCarcass", icon = "fa-solid fa-paw", label = locale("cl_stock_carcass"), onSelect = StockCarcass, distance = 1.5 },
-        { name = "npc_wagonDelete", icon = "fa-solid fa-warehouse", label = locale("cl_flee_wagon"), onSelect = DeleteThisWagon, distance = 1.5 }
+        { name = "npc_wagonStash",        icon = "fa-solid fa-box-open",      label = locale("cl_wagon_stash"),   onSelect = StashWagon,      distance = 1.5 },
+        { name = "npc_wagonShowCarcass",  icon = "fa-solid fa-boxes-stacked", label = locale("cl_see_carcass"),   onSelect = ShowCarcass,     distance = 1.5 },
+        { name = "npc_wagonStockCarcass", icon = "fa-solid fa-paw",           label = locale("cl_stock_carcass"), onSelect = StockCarcass,    distance = 1.5 },
+        { name = "npc_wagonDelete",       icon = "fa-solid fa-warehouse",     label = locale("cl_flee_wagon"),    onSelect = DeleteThisWagon, distance = 1.5 }
     })
 end
 
@@ -359,7 +359,8 @@ if not Config.Target then
                     if PromptHasHoldModeCompleted(stashPromptHandle) then
                         PromptSetEnabled(stashPromptHandle, false)
                         PromptSetVisible(stashPromptHandle, false)
-                        TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID, wagonNetId)
+                        TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID,
+                            wagonNetId)
                         Wait(500)
                         PromptSetEnabled(stashPromptHandle, true)
                         PromptSetVisible(stashPromptHandle, true)
@@ -400,7 +401,8 @@ if not Config.Target then
                     if PromptHasHoldModeCompleted(stashPromptHandle) then
                         PromptSetEnabled(stashPromptHandle, false)
                         PromptSetVisible(stashPromptHandle, false)
-                        TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID, wagonNetId)
+                        TriggerServerEvent("rsg-wagons:openWagonStash", "Wagon_Stash_" .. wagonID, wagonModel, wagonID,
+                            wagonNetId)
                         Wait(500)
                         PromptSetEnabled(stashPromptHandle, true)
                         PromptSetVisible(stashPromptHandle, true)
@@ -513,7 +515,6 @@ function DeleteWagon()
     end
 end
 
-
 if Config.SpawnKey then
     CreateThread(function()
         while true do
@@ -529,10 +530,10 @@ if Config.SpawnKey then
     end)
 end
 
-if Config.usecommand  then
-RegisterCommand("callwagon", function()
-    CallWagon()
-end, false)
+if Config.usecommand then
+    RegisterCommand("callwagon", function()
+        CallWagon()
+    end, false)
 end
 
 
@@ -561,8 +562,16 @@ local function GetCarcassMetaTag(entity)
     for i = 0, numComponents - 1 do
         local drawable, albedo, normal, material = GetMetaPedAssetGuids(entity, i)
         local palette, tint0, tint1, tint2 = GetMetaPedAssetTint(entity, i)
-        metatag[i] = { drawable = drawable, albedo = albedo, normal = normal, material = material, palette = palette,
-            tint0 = tint0, tint1 = tint1, tint2 = tint2 }
+        metatag[i] = {
+            drawable = drawable,
+            albedo = albedo,
+            normal = normal,
+            material = material,
+            palette = palette,
+            tint0 = tint0,
+            tint1 = tint1,
+            tint2 = tint2
+        }
     end
     return metatag
 end
@@ -667,7 +676,6 @@ function StoreCarriedEntityInWagon()
     end, wagonID)
 end
 
-
 function CarcassInWagon(wagonID)
     local carcassInWagon = {}
     lib.callback('rsg-wagons:getAnimalStorage', false, function(menuData)
@@ -683,37 +691,28 @@ function CarcassInWagon(wagonID)
 
         for _, v in pairs(menuData) do
             carcassInWagon[#carcassInWagon + 1] = {
-                label = v.label,
-                value = v.infos.type,
-                infos = v.infos,
-                desc = locale("animal_desc") .. v.infos.quantity .. " " .. v.label .. locale("animal_desc2"),
+                label       = v.label,
+                value       = v.infos.type,
+                infos       = v.infos,
+                description = locale("animal_desc") .. v.infos.quantity .. " " .. v.label .. locale("animal_desc2"),
+                onSelect    = function()
+                    TriggerServerEvent("rsg-wagons:removeAnimalFromWagon", wagonID, v.infos, v.label)
+                    openMenu = false
+                end
             }
         end
 
-        MenuData.Open(
-            "default", GetCurrentResourceName(), "carcass_menu",
-            {
-                title = locale("animals_in_wagon"),
-                subtext = locale("animals_in_wagon_desc"),
-                align = Config.PositionMenu,
-                elements = carcassInWagon
-            },
-            function(data, menu)
-                menu.close()
-                TriggerServerEvent("rsg-wagons:removeAnimalFromWagon", wagonID, data.current.infos, data.current.label)
+        lib.registerContext({
+            id = 'mycarcass_menu',
+            title = locale("animals_in_wagon"),
+            options = carcassInWagon,
+            onExit = function()
                 openMenu = false
             end,
-            function(_, menu)
-                menu.close()
-                openMenu = false
-            end,
-            function() end,
-            false
-        )
+        })
+        lib.showContext('mycarcass_menu')
     end, wagonID)
 end
-
-
 
 RegisterNetEvent("rsg-wagons:spawnAnimal", function(data)
     local coords = GetEntityCoords(cache.ped)
@@ -736,7 +735,8 @@ RegisterNetEvent("rsg-wagons:spawnAnimal", function(data)
     else
         cargo = CreateObject(data.model, coords.x, coords.y, coords.z, true, true, true)
         Citizen.InvokeNative(0x78B4567E18B54480, cargo)
-        Citizen.InvokeNative(0xF0B4F759F35CC7F5, cargo, Citizen.InvokeNative(0x34F008A7E48C496B, cargo, 0), cache.ped, 7, 512)
+        Citizen.InvokeNative(0xF0B4F759F35CC7F5, cargo, Citizen.InvokeNative(0x34F008A7E48C496B, cargo, 0), cache.ped, 7,
+            512)
         Citizen.InvokeNative(0x399657ED871B3A6C, cargo, data.peltquality or 0)
     end
 
@@ -779,4 +779,3 @@ AddEventHandler("onResourceStop", function(resourceName)
         end
     end
 end)
-
