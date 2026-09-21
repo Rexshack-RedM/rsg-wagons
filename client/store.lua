@@ -155,8 +155,21 @@ function UpdateShowroomWagonVisuals(wagon, custom)
             Citizen.InvokeNative(0xBB6F89150BC9D16B, wagon, i, true)
         end
     end
-    if custom.extra then
-        Citizen.InvokeNative(0xBB6F89150BC9D16B, wagon, custom.extra, false)
+    -- Multi-extra support (custom.extras array); legacy single custom.extra
+    -- from older database rows is honoured as a one-item fallback.
+    local extrasList = nil
+    if type(custom.extras) == 'table' and #custom.extras > 0 then
+        extrasList = custom.extras
+    elseif custom.extra and tonumber(custom.extra) and tonumber(custom.extra) ~= -1 then
+        extrasList = { tonumber(custom.extra) }
+    end
+    if extrasList then
+        for _, extraId in ipairs(extrasList) do
+            local eid = tonumber(extraId)
+            if eid then
+                Citizen.InvokeNative(0xBB6F89150BC9D16B, wagon, eid, false)
+            end
+        end
     end
 end
 
