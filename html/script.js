@@ -108,7 +108,7 @@ const WagonShop = {
                     this.showMyWagons(data.wagons, data.customs);
                     break;
                 case 'showCustomOptions':
-                    this.showCustomOptions(data.type, data.options, data.price);
+                    this.showCustomOptions(data.type, data.options, data.price, data.multi, data.categories);
                     break;
                 case 'notify':
                     this.showNotification(data.type, data.title, data.message);
@@ -441,15 +441,31 @@ const WagonShop = {
         return prices[type] || 0;
     },
 
-    showCustomOptions(type, options, price) {
+    showCustomOptions(type, options, price, multi, categories) {
         this.selectedCustomValue = null;
         document.getElementById('btn-save-customize').disabled = true;
 
         const container = document.getElementById('customize-items');
         container.innerHTML = '';
-        document.getElementById('customize-preview-title').textContent =
-            `Select ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+        const titleEl = document.getElementById('customize-preview-title');
 
+        if (type === 'extra' && multi) {
+            const fee = price || this.getCustomPrice(type);
+            titleEl.textContent = `Select Extras ($${fee} per save)`;
+            this.renderExtraCheckboxes(container, options || []);
+        } else if (type === 'props' && categories && categories.length > 0) {
+            titleEl.textContent = 'Select Props';
+            this.renderPropsetCategories(container, categories, options || [], price);
+        } else {
+            titleEl.textContent = `Select ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            this.renderSingleSelect(container, type, options || [], price);
+        }
+
+        document.getElementById('customize-preview').classList.remove('hidden');
+        document.getElementById('customize-options').classList.add('hidden');
+    },
+
+    renderSingleSelect(container, type, options, price) {
         options.forEach(opt => {
             const item = document.createElement('div');
             item.className = 'customize-option-item';
@@ -473,9 +489,104 @@ const WagonShop = {
 
             container.appendChild(item);
         });
+    },
 
-        document.getElementById('customize-preview').classList.remove('hidden');
-        document.getElementById('customize-options').classList.add('hidden');
+    renderExtraCheckboxes(container, options) {
+        const selected = new Set();
+        const initial = new Set();
+        options.forEach(opt => {
+            if (opt.enabled) {
+                selected.add(opt.value);
+                initial.add(opt.value);
+            }
+        });
+
+        const saveBtn = document.getElementById('btn-save-customize');
+        const sync = () => {
+            const arr = Array.from(selected).sort((a, b) => a - b);
+            this.selectedCustomValue = arr;
+            this.sendNUI('previewCustom', { type: 'extra', value: arr });
+            const dirty = arr.length !== initial.size || arr.some(v => !initial.has(v));
+            saveBtn.disabled = !dirty;
+        };
+
+        options.forEach(opt => {
+            const item = document.createElement('div');
+            item.className = 'customize-option-item' + (opt.enabled ? ' selected' : '');
+            item.innerHTML = `
+                <span class="opt-label">${opt.enabled ? '&#9746;' : '&#9744;'} ${opt.label}</span>
+            `;
+
+            item.addEventListener('click', () => {
+                if (selected.has(opt.value)) {
+                    selected.delete(opt.value);
+                    item.classList.remove('selected');
+                    item.querySelector('.opt-label').innerHTML = `&#9744; ${opt.label}`;
+                } else {
+                    selected.add(opt.value);
+                    item.classList.add('selected');
+                    item.querySelector('.opt-label').innerHTML = `&#9746; ${opt.label}`;
+                }
+                sync();
+            });
+
+            container.appendChild(item);
+        });
+
+        this.selectedCustomValue = Array.from(selected).sort((a, b) => a - b);
+    },
+
+    renderPropsetCategories(container, categories, removeOptions, price) {
+        const displayPrice = price || this.getCustomPrice('props');
+        const saveBtn = document.getElementById('btn-save-customize');
+
+        const selectRow = (optValue, scope) => {
+            container.querySelectorAll('.customize-option-item').forEach(c => c.classList.remove('selected'));
+            scope.classList.add('selected');
+            this.selectedCustomValue = optValue;
+            saveBtn.disabled = false;
+            this.sendNUI('previewCustom', { type: 'props', value: optValue });
+        };
+
+        (removeOptions || []).forEach(opt => {
+            const item = document.createElement('div');
+            item.className = 'customize-option-item';
+            item.innerHTML = `
+                <span class="opt-label">${opt.label}</span>
+                <span class="opt-price">$${displayPrice}</span>
+            `;
+            item.addEventListener('click', () => selectRow(opt.value, item));
+            container.appendChild(item);
+        });
+
+        const select = document.createElement('select');
+        select.setAttribute('style', 'width:100%;margin:8px 0;padding:8px;background:#1a1a1a;color:#e8dcc0;border:1px solid #6b5b3e;border-radius:4px;font-size:14px;');
+        categories.forEach((cat, idx) => {
+            const o = document.createElement('option');
+            o.value = idx;
+            o.textContent = `${cat.label} (${cat.options.length})`;
+            select.appendChild(o);
+        });
+        container.appendChild(select);
+
+        const listWrap = document.createElement('div');
+        container.appendChild(listWrap);
+
+        const renderCat = (idx) => {
+            listWrap.innerHTML = '';
+            (categories[idx].options || []).forEach(opt => {
+                const item = document.createElement('div');
+                item.className = 'customize-option-item';
+                item.innerHTML = `
+                    <span class="opt-label">${opt.label}</span>
+                    <span class="opt-price">$${displayPrice}</span>
+                `;
+                item.addEventListener('click', () => selectRow(opt.value, item));
+                listWrap.appendChild(item);
+            });
+        };
+        select.addEventListener('change', () => renderCat(parseInt(select.value, 10)));
+        renderCat(0);
     },
 
     backFromCustomize() {
@@ -500,7 +611,12 @@ const WagonShop = {
         });
 
         if (this.selectedMyWagon.custom) {
-            this.selectedMyWagon.custom[this.selectedCustomType] = this.selectedCustomValue;
+            if (this.selectedCustomType === 'extra' && Array.isArray(this.selectedCustomValue)) {
+                this.selectedMyWagon.custom['extras'] = this.selectedCustomValue;
+                delete this.selectedMyWagon.custom['extra'];
+            } else {
+                this.selectedMyWagon.custom[this.selectedCustomType] = this.selectedCustomValue;
+            }
         }
 
         this.backFromCustomize();

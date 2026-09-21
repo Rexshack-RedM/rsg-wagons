@@ -85,7 +85,7 @@ local function FindSafeSpawnCoords(baseCoords, attempts, radius, minDistance)
     return nil
 end
 
-local function SpawnWagon(model, tint, livery, props, extra, lantern, myWagonID)
+local function SpawnWagon(model, tint, livery, props, extra, lantern, myWagonID, extras)
     local hash = joaat(model)
     if not lib.requestModel(hash, 10000) then
         return lib.notify({ title = locale("error"), description = locale("cl_no_road"), type = "error", duration = 7000 })
@@ -126,8 +126,21 @@ local function SpawnWagon(model, tint, livery, props, extra, lantern, myWagonID)
             Citizen.InvokeNative(0xBB6F89150BC9D16B, mywagon, i, true)
         end
     end
-    if extra then
-        Citizen.InvokeNative(0xBB6F89150BC9D16B, mywagon, extra, false)
+    -- Multi-extra support (extras array); legacy single `extra` value from
+    -- older database rows is honoured as a one-item fallback.
+    local extrasList = nil
+    if type(extras) == 'table' and #extras > 0 then
+        extrasList = extras
+    elseif extra and tonumber(extra) and tonumber(extra) ~= -1 then
+        extrasList = { tonumber(extra) }
+    end
+    if extrasList then
+        for _, extraId in ipairs(extrasList) do
+            local eid = tonumber(extraId)
+            if eid then
+                Citizen.InvokeNative(0xBB6F89150BC9D16B, mywagon, eid, false)
+            end
+        end
     end
 
     if model == "huntercart01" then
@@ -614,7 +627,8 @@ RegisterNetEvent("rsg-wagons:receiveWagonData", function(wModel, customData, ani
         customData.props,
         customData.extra,
         customData.lantern,
-        myWagonID
+        myWagonID,
+        customData.extras
     )
 end)
 
@@ -625,7 +639,7 @@ RegisterNetEvent("rsg-wagons:saveWagonToDatabase", function(wagonModel, name, mo
         tint = 0,
         livery = -1,
         props = false,
-        extra = 0,
+        extras = {},
         buyMoneyType = moneyType,
     }
     TriggerServerEvent("rsg-wagons:saveWagonToDatabase", wagonModel, customData, moneyType)

@@ -80,7 +80,7 @@ RegisterNUICallback('buyWagon', function(data, cb)
         tint = 0,
         livery = -1,
         props = false,
-        extra = 0,
+        extras = {},
         buyMoneyType = moneyType,
     }
     TriggerServerEvent("rsg-wagons:saveWagonToDatabase", model, customData, moneyType)
@@ -116,71 +116,138 @@ RegisterNUICallback('sellWagon', function(data, cb)
 end)
 
 RegisterNUICallback('getCustomOptions', function(data, cb)
-    local type = data.type
-    local model = data.model
+    local customType = data.type
+    local model = string.lower(data.model or '')
     local custom = data.custom or {}
     currentWagonCustom = custom
 
     local options = {}
+    local multi = false
+    local categories = nil
 
-    if type == "livery" then
+    if customType == "livery" then
         options[#options + 1] = { label = "Remove", value = -1 }
         if Custom.livery and Custom.livery[model] then
             for _, v in ipairs(Custom.livery[model]) do
                 options[#options + 1] = { label = v[2], value = v[1] }
             end
         end
-    elseif type == "extra" then
-        options[#options + 1] = { label = "Remove", value = -1 }
+    elseif customType == "extra" then
+        -- Multi-select: entries are { id, label } tables (see mackmerge.lua).
+        -- Legacy bare-number entries are still accepted as a fallback.
+        multi = true
+        local enabled = {}
+        if type(custom.extras) == "table" then
+            for _, id in ipairs(custom.extras) do
+                local nid = tonumber(id)
+                if nid then enabled[nid] = true end
+            end
+        elseif custom.extra and tonumber(custom.extra) and tonumber(custom.extra) ~= -1 then
+            enabled[tonumber(custom.extra)] = true
+        end
         if Custom.extra and Custom.extra[model] then
-            for _, v in ipairs(Custom.extra[model]) do
-                options[#options + 1] = { label = tostring(v), value = v }
+            for _, e in ipairs(Custom.extra[model]) do
+                local id, label = nil, nil
+                if type(e) == "table" then
+                    id, label = tonumber(e.id), e.label
+                elseif tonumber(e) then
+                    id, label = tonumber(e), "Extra " .. tostring(e)
+                end
+                if id then
+                    options[#options + 1] = { label = label or ("Extra " .. tostring(id)), value = id, enabled = enabled[id] == true }
+                end
             end
         end
-    elseif type == "tint" then
+    elseif customType == "tint" then
         options[#options + 1] = { label = "Remove", value = -1 }
         local maxTints = (Custom.tint and Custom.tint[model]) or 0
         for i = 1, maxTints do
             options[#options + 1] = { label = tostring(i), value = i }
         end
-    elseif type == "props" then
+    elseif customType == "props" then
+        -- Categorized propsets (general / cargo / trade / supplies).
+        -- Legacy flat arrays are wrapped as a single 'general' category.
         options[#options + 1] = { label = "Remove", value = -1 }
-        if Custom.props and Custom.props[model] then
-            local ordered = {}
-            for k, v in pairs(Custom.props[model]) do
-                ordered[#ordered + 1] = { key = k, value = v }
+        local sets = Custom.props and Custom.props[model]
+        if sets then
+            local cats = nil
+            if type(sets.general) == "table" then
+                cats = sets
+            else
+                cats = { general = sets }
             end
-            table.sort(ordered, function(a, b) return tonumber(a.key) < tonumber(b.key) end)
-            for _, prop in ipairs(ordered) do
-                options[#options + 1] = { label = tostring(prop.key), value = prop.value }
+            categories = {}
+            local seenCats = {}
+            local order = { "general", "cargo", "trade", "supplies" }
+            local function addCategory(catName)
+                local list = cats[catName]
+                if type(list) == "table" and #list > 0 and not seenCats[catName] then
+                    seenCats[catName] = true
+                    local catOpts = {}
+                    for _, propset in ipairs(list) do
+                        if type(propset) == "string" then
+                            catOpts[#catOpts + 1] = { label = propset, value = propset }
+                        end
+                    end
+                    if #catOpts > 0 then
+                        categories[#categories + 1] = {
+                            name = catName,
+                            label = catName:gsub("^%l", string.upper),
+                            options = catOpts
+                        }
+                    end
+                end
             end
+            for _, catName in ipairs(order) do addCategory(catName) end
+            for catName in pairs(cats) do addCategory(catName) end
         end
-    elseif type == "lantern" then
+    elseif customType == "lantern" then
         options[#options + 1] = { label = "Remove", value = -1 }
         if Custom.lantern and Custom.lantern[model] then
-            for key, val in pairs(Custom.lantern[model]) do
-                options[#options + 1] = { label = tostring(key), value = val }
+            for _, l in pairs(Custom.lantern[model]) do
+                local hash, label = nil, nil
+                if type(l) == "table" then
+                    hash, label = l.value, l.label
+                elseif type(l) == "string" then
+                    hash, label = l, l
+                end
+                if hash then
+                    options[#options + 1] = { label = label or hash, value = hash }
+                end
             end
         end
     end
 
-    local price = Config.CustomPrice[type] or 0
+    local price = Config.CustomPrice[customType] or 0
 
     SendNUIMessage({
         action = 'showCustomOptions',
-        type = type,
+        type = customType,
         options = options,
-        price = price
+        price = price,
+        multi = multi,
+        categories = categories
     })
     cb('ok')
 end)
 
 RegisterNUICallback('previewCustom', function(data, cb)
-    local type = data.type
+    local customType = data.type
     local value = data.value
     local currentShow = {}
     for k, v in pairs(currentWagonCustom or {}) do currentShow[k] = v end
-    currentShow[type] = value
+    if customType == 'extra' and type(value) == 'table' then
+        -- Multi-extra selection from the checkbox UI
+        currentShow['extras'] = value
+        currentShow['extra'] = nil
+    else
+        if (customType == 'props' or customType == 'lantern') and value == -1 then
+            -- "Remove": false skips the propset/lantern natives entirely
+            -- (GetHashKey(-1) would be invalid)
+            value = false
+        end
+        currentShow[customType] = value
+    end
     SpawnShowroomMyWagon(currentWagonModel, currentStore, currentShow)
     cb('ok')
 end)
@@ -191,13 +258,23 @@ RegisterNUICallback('resetPreview', function(data, cb)
 end)
 
 RegisterNUICallback('saveCustomization', function(data, cb)
-    local type = data.type
+    local customType = data.type
     local value = data.value
     local model = data.model
 
-    currentWagonCustom[type] = value
+    if customType == 'extra' and type(value) == 'table' then
+        -- Multi-extra selection: stored as an array, legacy single key cleared
+        currentWagonCustom['extras'] = value
+        currentWagonCustom['extra'] = nil
+    else
+        if (customType == 'props' or customType == 'lantern') and value == -1 then
+            -- "Remove": persist false so the propset/lantern is skipped on spawn
+            value = false
+        end
+        currentWagonCustom[customType] = value
+    end
     SpawnShowroomMyWagon(model, currentStore, currentWagonCustom)
-    TriggerServerEvent("rsg-wagons:saveCustomization", model, currentWagonCustom, type)
+    TriggerServerEvent("rsg-wagons:saveCustomization", model, currentWagonCustom, customType)
     cb('ok')
 end)
 
